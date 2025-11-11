@@ -129,8 +129,10 @@ def api_predict():
     
     except Exception as e:
         logger.error(f"API Error: {str(e)}")
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': 'An error occurred during prediction. Please check your input data.'}), 400
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    import os
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
