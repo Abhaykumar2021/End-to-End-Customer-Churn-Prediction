@@ -1,8 +1,7 @@
 import os
 import sys
 import pandas as pd
-from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset
+from scipy import stats
 
 from churn_prediction.logger import logger
 from churn_prediction.exception import ChurnPredictionException
@@ -85,7 +84,7 @@ class DataValidation:
     
     def detect_dataset_drift(self, reference_df: pd.DataFrame, current_df: pd.DataFrame) -> bool:
         """
-        Detect data drift between reference and current datasets
+        Detect data drift between reference and current datasets using statistical tests
         
         Args:
             reference_df: Reference dataframe (train data)
@@ -97,9 +96,34 @@ class DataValidation:
         try:
             logger.info("Starting data drift detection")
             
-            # Create drift report
-            data_drift_report = Report(metrics=[DataDriftPreset()])
-            data_drift_report.run(reference_data=reference_df, current_data=current_df)
+            # Get numerical columns for drift detection
+            numerical_cols = reference_df.select_dtypes(include=['int64', 'float64']).columns
+            
+            drift_detected = False
+            drift_by_columns = {}
+            
+            # Use Kolmogorov-Smirnov test for numerical columns
+            for col in numerical_cols:
+                if col in current_df.columns:
+                    # Remove NaN values
+                    ref_col = reference_df[col].dropna()
+                    curr_col = current_df[col].dropna()
+                    
+                    if len(ref_col) > 0 and len(curr_col) > 0:
+                        # Perform KS test
+                        statistic, p_value = stats.ks_2samp(ref_col, curr_col)
+                        
+                        # Drift detected if p-value < 0.05
+                        col_drift = p_value < 0.05
+                        drift_by_columns[col] = {
+                            'drift_detected': bool(col_drift),
+                            'p_value': float(p_value),
+                            'statistic': float(statistic)
+                        }
+                        
+                        if col_drift:
+                            drift_detected = True
+                            logger.warning(f"Drift detected in column '{col}' (p-value: {p_value:.4f})")
             
             # Save report
             os.makedirs(
@@ -107,15 +131,10 @@ class DataValidation:
                 exist_ok=True
             )
             
-            report_dict = data_drift_report.as_dict()
-            
-            # Extract drift information
-            drift_detected = report_dict['metrics'][0]['result']['dataset_drift']
-            
             # Save to YAML
             drift_info = {
                 'dataset_drift': drift_detected,
-                'drift_by_columns': report_dict['metrics'][0]['result'].get('drift_by_columns', {})
+                'drift_by_columns': drift_by_columns
             }
             
             write_yaml_file(self.data_validation_config.drift_report_file_path, drift_info)
