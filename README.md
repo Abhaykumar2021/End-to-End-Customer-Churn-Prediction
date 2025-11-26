@@ -66,6 +66,9 @@ Based on our Feature Importance analysis (Permutation Importance), the top facto
 
 ```
 .
+├── artifacts
+│   ├── churn_model.h5
+│   └── preprocessing_pipeline.pkl
 ├── data
 │   └── raw
 │       └── Telco_customer_churn.xlsx
@@ -73,6 +76,7 @@ Based on our Feature Importance analysis (Permutation Importance), the top facto
 │   ├── 1.EDA_and_insights.ipynb
 │   ├── 2.model_training.ipynb
 │   └── churn_model.h5
+├── build_artifacts.py
 ├── requirements.txt
 └── README.md
 ```
