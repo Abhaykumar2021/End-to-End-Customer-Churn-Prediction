@@ -18,11 +18,5 @@ setup(
     author = "Abhay Kumar",
     author_email = "lavadon2021@gmail.com",
     packages = find_packages(),
-    install_requires = [
-        "pandas",
-        "numpy",
-        "matplotlib",
-        "seaborn",
-        "scikit-learn",
-    ]    
+    install_requires = get_requirements('requirements.txt')    
     )   

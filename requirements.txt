@@ -7,4 +7,5 @@ xgboost
 openpyxl
 imbalanced-learn
 tensorflow
+dill
 -e .
