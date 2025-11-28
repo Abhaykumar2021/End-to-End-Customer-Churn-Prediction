@@ -58,17 +58,22 @@ Based on our Feature Importance analysis (Permutation Importance), the top facto
     pip install -r requirements.txt
     ```
 
-2.  **Run the Notebooks:**
-    - Start with `notebook/1.EDA_and_insights.ipynb` to see the data analysis.
-    - Run `notebook/2.model_training.ipynb` to train the models and generate the `churn_model.h5` file.
+2.  **Train the Model:**
+    ```bash
+    python train.py
+    ```
+    This script will:
+    - Ingest and preprocess the data.
+    - Train the Neural Network model.
+    - Save the artifacts (`model.h5` and `preprocessor.pkl`) in the `artifacts/` folder.
 
 ### 7) 📂 Project Structure
 
 ```
 .
 ├── artifacts
-│   ├── churn_model.h5
-│   └── preprocessing_pipeline.pkl
+│   ├── model.h5
+│   └── preprocessor.pkl
 ├── data
 │   └── raw
 │       └── Telco_customer_churn.xlsx
@@ -76,7 +81,19 @@ Based on our Feature Importance analysis (Permutation Importance), the top facto
 │   ├── 1.EDA_and_insights.ipynb
 │   ├── 2.model_training.ipynb
 │   └── churn_model.h5
-├── build_artifacts.py
+├── src
+│   ├── components
+│   │   ├── data_ingestion.py
+│   │   ├── data_transformation.py
+│   │   └── model_trainer.py
+│   ├── pipeline
+│   │   ├── prediction_pipeline.py
+│   │   └── train_pipeline.py
+│   ├── exception.py
+│   ├── logger.py
+│   └── utils.py
 ├── requirements.txt
+├── setup.py
+├── train.py
 └── README.md
 ```
