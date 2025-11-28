@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Prediction</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f6f3;
+            border: 1px solid #a3e4d7;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #16a085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Churn Prediction</h1>
+        <form action="{{ url_for('predict_datapoint') }}" method="post">
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select name="gender" id="gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="senior_citizen">Senior Citizen</label>
+                <select name="senior_citizen" id="senior_citizen" required>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="partner">Partner</label>
+                <select name="partner" id="partner" required>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dependents">Dependents</label>
+                <select name="dependents" id="dependents" required>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tenure">Tenure (Months)</label>
+                <input type="number" name="tenure" id="tenure" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="phone_service">Phone Service</label>
+                <select name="phone_service" id="phone_service" required>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="multiple_lines">Multiple Lines</label>
+                <select name="multiple_lines" id="multiple_lines" required>
+                    <option value="No">No</option>
+                    <option value="No phone service">No phone service</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="internet_service">Internet Service</label>
+                <select name="internet_service" id="internet_service" required>
+                    <option value="DSL">DSL</option>
+                    <option value="Fiber optic">Fiber optic</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="online_security">Online Security</label>
+                <select name="online_security" id="online_security" required>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="online_backup">Online Backup</label>
+                <select name="online_backup" id="online_backup" required>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="device_protection">Device Protection</label>
+                <select name="device_protection" id="device_protection" required>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tech_support">Tech Support</label>
+                <select name="tech_support" id="tech_support" required>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="streaming_tv">Streaming TV</label>
+                <select name="streaming_tv" id="streaming_tv" required>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="streaming_movies">Streaming Movies</label>
+                <select name="streaming_movies" id="streaming_movies" required>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="contract">Contract</label>
+                <select name="contract" id="contract" required>
+                    <option value="Month-to-month">Month-to-month</option>
+                    <option value="One year">One year</option>
+                    <option value="Two year">Two year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="paperless_billing">Paperless Billing</label>
+                <select name="paperless_billing" id="paperless_billing" required>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="payment_method">Payment Method</label>
+                <select name="payment_method" id="payment_method" required>
+                    <option value="Electronic check">Electronic check</option>
+                    <option value="Mailed check">Mailed check</option>
+                    <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                    <option value="Credit card (automatic)">Credit card (automatic)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="monthly_charges">Monthly Charges</label>
+                <input type="number" name="monthly_charges" id="monthly_charges" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="total_charges">Total Charges</label>
+                <input type="number" name="total_charges" id="total_charges" step="0.01" min="0" required>
+            </div>
+            <button type="submit">Predict Churn</button>
+        </form>
+        {% if results %}
+        <div class="result">
+            The prediction is: {{ results }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
