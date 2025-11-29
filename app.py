@@ -1,3 +1,10 @@
+import os
+# Fix for macOS TensorFlow/OpenMP mutex deadlock
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['OMP_NUM_THREADS'] = '1'
+
+
 from flask import Flask, request, render_template
 import numpy as np
 import pandas as pd
@@ -53,4 +60,4 @@ def predict_datapoint():
         return render_template('home.html', results=prediction_text)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    app.run(host="0.0.0.0", port=5005, debug=True)
