@@ -8,5 +8,5 @@ openpyxl
 imbalanced-learn
 tensorflow
 dill
-Flask
+streamlit
 -e .
