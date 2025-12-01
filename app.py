@@ -75,20 +75,19 @@ with tab3:
 
 # 4. PREDICTION LOGIC
 if st.button("Predict Churn Status", type="primary", use_container_width=True):
-    
-    # Create input dictionary
-    # CRITICAL: Ensure these keys match your training columns EXACTLY
+
+    # 1. Create Dictionary (Ensure keys match IBM dataset perfectly)
     input_dict = {
         "Gender": [gender],
         "Senior Citizen": [senior_citizen],
         "Partner": [partner],
         "Dependents": [dependents],
-        "Tenure Months": [tenure],             # Changed from 'tenure'
-        "Phone Service": [phone_service],      # Changed from 'PhoneService'
-        "Multiple Lines": [multiple_lines],    # Changed from 'MultipleLines'
-        "Internet Service": [internet_service],# Changed from 'InternetService'
-        "Online Security": [online_security],  # Changed from 'OnlineSecurity'
-        "Online Backup": [online_backup],      # ...
+        "Tenure Months": [tenure],
+        "Phone Service": [phone_service],
+        "Multiple Lines": [multiple_lines],
+        "Internet Service": [internet_service],
+        "Online Security": [online_security],
+        "Online Backup": [online_backup],
         "Device Protection": [device_protection],
         "Tech Support": [tech_support],
         "Streaming TV": [streaming_tv],
@@ -96,23 +95,50 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
         "Contract": [contract],
         "Paperless Billing": [paperless_billing],
         "Payment Method": [payment_method],
-        "Monthly Charges": [monthly_charges],  # Changed from 'MonthlyCharges'
-        "Total Charges": [total_charges]       # Changed from 'TotalCharges'
+        "Monthly Charges": [monthly_charges],
+        "Total Charges": [total_charges]
     }
     
+    # 2. Create DataFrame
     pred_df = pd.DataFrame(input_dict)
     
-    pred_df['Total Charges'] = pd.to_numeric(pred_df['Total Charges'], errors='coerce') 
+    # 3. CRITICAL FIX: Enforce Numeric Types
+    # This prevents the 'ufunc isnan' error by converting any strings to numbers (or NaN)
+    try:
+        pred_df['Total Charges'] = pd.to_numeric(pred_df['Total Charges'], errors='coerce')
+        pred_df['Monthly Charges'] = pd.to_numeric(pred_df['Monthly Charges'], errors='coerce')
+        pred_df['Tenure Months'] = pd.to_numeric(pred_df['Tenure Months'], errors='coerce')
+    except Exception as e:
+        st.error(f"Error converting data types: {e}")
+        st.stop()
+
+    # 4. Debugging: Show the dataframe types if needed (Optional)
+    # st.write(pred_df.dtypes)
 
     try:
-        # 2. Transform (The pipeline now sees numerical NaNs, which it can impute)
+        # 5. Transform
         processed_data = preprocessor.transform(pred_df)
+        
+        # 6. Predict
         prediction = model.predict(processed_data)
         score = prediction[0][0]
         
-        # ... display results ...
-        
+        # 7. Display Results
+        st.divider()
+        if score > 0.5:
+            st.error(f"🚨 **CHURN PREDICTED** (Probability: {score:.2%})")
+            st.write("This customer is at high risk of leaving.")
+        else:
+            st.success(f"✅ **NO CHURN** (Probability: {score:.2%})")
+            st.write("This customer is likely to stay.")
+            
     except Exception as e:
-        # ... error handling ...
-        st.error(f"An error occurred during prediction: {e}")
-        st.info("Tip: Check column names in 'input_dict' match exactly what your pipeline expects.")
+        st.error(f"Prediction Error: {e}")
+        # Helpful debugging info
+        st.info("Debugging Hint: Check if 'input_dict' keys match the training data columns exactly.")
+        with st.expander("See expected columns"):
+            # This helps you see what the pipeline expects
+            if hasattr(preprocessor, 'feature_names_in_'):
+                st.write(preprocessor.feature_names_in_)
+            else:
+                st.write("Pipeline does not have feature_names_in_ attribute.")
