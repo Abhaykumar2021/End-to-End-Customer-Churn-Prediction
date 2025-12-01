@@ -102,16 +102,17 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
     
     pred_df = pd.DataFrame(input_dict)
     
+    pred_df['Total Charges'] = pd.to_numeric(pred_df['Total Charges'], errors='coerce') 
+
     try:
+        # 2. Transform (The pipeline now sees numerical NaNs, which it can impute)
         processed_data = preprocessor.transform(pred_df)
         prediction = model.predict(processed_data)
         score = prediction[0][0]
         
-        st.divider()
-        if score > 0.5:
-            st.error(f"🚨 **CHURN PREDICTED** (Probability: {score:.2%})")
-        else:
-            st.success(f"✅ **NO CHURN** (Probability: {score:.2%})")
-            
+        # ... display results ...
+        
     except Exception as e:
-        st.error(f"Error: {e}")
+        # ... error handling ...
+        st.error(f"An error occurred during prediction: {e}")
+        st.info("Tip: Check column names in 'input_dict' match exactly what your pipeline expects.")
