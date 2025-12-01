@@ -114,7 +114,7 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
         # Note: If your pipeline expects 'Senior Citizen' as 0/1 (int), remove it from this list.
         # But usually, it's safer to treat it as categorical if you OHE'd it.
         categorical_cols = [
-            "Gender", "Partner", "Dependents", "Phone Service", "Multiple Lines", 
+            "Gender", "Senior Citizen", "Partner", "Dependents", "Phone Service", "Multiple Lines", 
             "Internet Service", "Online Security", "Online Backup", "Device Protection", 
             "Tech Support", "Streaming TV", "Streaming Movies", "Contract", 
             "Paperless Billing", "Payment Method"
