@@ -58,7 +58,16 @@ Based on our Feature Importance analysis (Permutation Importance), the top facto
     pip install -r requirements.txt
     ```
 
-2.  **Train the Model:**
+2.  **Run the Streamlit App:**
+
+    ```bash
+    streamlit run app.py
+    ```
+
+    This will launch the web interface where you can input customer details and get churn predictions.
+
+3.  **Train the Model (Optional):**
+    If you want to retrain the model from scratch:
     ```bash
     python train.py
     ```

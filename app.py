@@ -1,63 +1,156 @@
-import os
-# Fix for macOS TensorFlow/OpenMP mutex deadlock
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-os.environ['OMP_NUM_THREADS'] = '1'
-
-
-from flask import Flask, request, render_template
-import numpy as np
+import streamlit as st
 import pandas as pd
+import tensorflow as tf
+import joblib
 
-from sklearn.preprocessing import StandardScaler
-from src.pipeline.prediction_pipeline import CustomData, PredictPipeline
+# 1. APP CONFIGURATION
+st.set_page_config(
+    page_title="Telco Churn Predictor",
+    page_icon="📉",
+    layout="wide"
+)
 
-application = Flask(__name__)
-app = application
+# 2. LOAD ARTIFACTS
+@st.cache_resource
+def load_artifacts():
+    try:
+        model = tf.keras.models.load_model('artifacts/model.h5')
+        preprocessor = joblib.load('artifacts/preprocessor.pkl')
+        return model, preprocessor
+    except Exception as e:
+        st.error(f"Error loading artifacts: {e}")
+        return None, None
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+model, preprocessor = load_artifacts()
 
-@app.route('/predictdata', methods=['GET', 'POST'])
-def predict_datapoint():
-    if request.method == 'GET':
-        return render_template('home.html')
-    else:
-        data = CustomData(
-            gender=request.form.get('gender'),
-            senior_citizen=int(request.form.get('senior_citizen')),
-            partner=request.form.get('partner'),
-            dependents=request.form.get('dependents'),
-            tenure=int(request.form.get('tenure')),
-            phone_service=request.form.get('phone_service'),
-            multiple_lines=request.form.get('multiple_lines'),
-            internet_service=request.form.get('internet_service'),
-            online_security=request.form.get('online_security'),
-            online_backup=request.form.get('online_backup'),
-            device_protection=request.form.get('device_protection'),
-            tech_support=request.form.get('tech_support'),
-            streaming_tv=request.form.get('streaming_tv'),
-            streaming_movies=request.form.get('streaming_movies'),
-            contract=request.form.get('contract'),
-            paperless_billing=request.form.get('paperless_billing'),
-            payment_method=request.form.get('payment_method'),
-            monthly_charges=float(request.form.get('monthly_charges')),
-            total_charges=float(request.form.get('total_charges'))
-        )
+if model is None or preprocessor is None:
+    st.stop()
+
+# 3. UI LAYOUT
+st.title("📉 Customer Churn Prediction System")
+st.markdown("Enter customer details below to predict churn probability.")
+
+tab1, tab2, tab3 = st.tabs(["👤 Demographics", "📞 Services", "💰 Account Info"])
+
+# --- TAB 1: DEMOGRAPHICS ---
+with tab1:
+    col1, col2 = st.columns(2)
+    with col1:
+        gender = st.selectbox("Gender", ["Male", "Female"])
+        senior_citizen = st.radio("Senior Citizen", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
+    with col2:
+        partner = st.selectbox("Partner", ["Yes", "No"])
+        dependents = st.selectbox("Dependents", ["Yes", "No"])
+
+# --- TAB 2: SERVICES ---
+with tab2:
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        phone_service = st.selectbox("Phone Service", ["Yes", "No"])
+        multiple_lines = st.selectbox("Multiple Lines", ["No phone service", "No", "Yes"])
+        internet_service = st.selectbox("Internet Service", ["DSL", "Fiber optic", "No"])
+    with col2:
+        online_security = st.selectbox("Online Security", ["No internet service", "No", "Yes"])
+        online_backup = st.selectbox("Online Backup", ["No internet service", "No", "Yes"])
+        device_protection = st.selectbox("Device Protection", ["No internet service", "No", "Yes"])
+    with col3:
+        tech_support = st.selectbox("Tech Support", ["No internet service", "No", "Yes"])
+        streaming_tv = st.selectbox("Streaming TV", ["No internet service", "No", "Yes"])
+        streaming_movies = st.selectbox("Streaming Movies", ["No internet service", "No", "Yes"])
+
+# --- TAB 3: ACCOUNT INFO ---
+with tab3:
+    col1, col2 = st.columns(2)
+    with col1:
+        tenure = st.slider("Tenure (Months)", 0, 72, 12)
+        contract = st.selectbox("Contract", ["Month-to-month", "One year", "Two year"])
+        paperless_billing = st.selectbox("Paperless Billing", ["Yes", "No"])
+    with col2:
+        payment_method = st.selectbox("Payment Method", [
+            "Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"
+        ])
+        monthly_charges = st.number_input("Monthly Charges", min_value=18.0, max_value=120.0, value=70.0)
+        total_charges = st.number_input("Total Charges", min_value=0.0, value=monthly_charges * tenure)
+
+# 4. PREDICTION LOGIC
+if st.button("Predict Churn Status", type="primary", use_container_width=True):
+    
+    # 1. Create Dictionary
+    input_dict = {
+        "Gender": [gender],
+        "Senior Citizen": [senior_citizen],
+        "Partner": [partner],
+        "Dependents": [dependents],
+        "Tenure Months": [tenure],
+        "Phone Service": [phone_service],
+        "Multiple Lines": [multiple_lines],
+        "Internet Service": [internet_service],
+        "Online Security": [online_security],  
+        "Online Backup": [online_backup],
+        "Device Protection": [device_protection],
+        "Tech Support": [tech_support],
+        "Streaming TV": [streaming_tv],
+        "Streaming Movies": [streaming_movies],
+        "Contract": [contract],
+        "Paperless Billing": [paperless_billing],
+        "Payment Method": [payment_method],
+        "Monthly Charges": [monthly_charges],
+        "Total Charges": [total_charges]
+    }
+    
+    # 2. Create DataFrame
+    pred_df = pd.DataFrame(input_dict)
+    
+    # 3. DEBUG: Force Data Types (The Nuclear Fix)
+    # We explicitly tell Pandas: "These are numbers, and these are strings."
+    try:
+        # Force Numerics
+        pred_df["Tenure Months"] = pd.to_numeric(pred_df["Tenure Months"], errors='coerce')
+        pred_df["Monthly Charges"] = pd.to_numeric(pred_df["Monthly Charges"], errors='coerce')
+        pred_df["Total Charges"] = pd.to_numeric(pred_df["Total Charges"], errors='coerce')
         
-        pred_df = data.get_data_as_data_frame()
-        print(pred_df)
-        print("Before Prediction")
-
-        predict_pipeline = PredictPipeline()
-        print("Mid Prediction")
-        results = predict_pipeline.predict(pred_df)
-        print("after Prediction")
+        # Force Categoricals to String (prevents weird object types)
+        # Note: If your pipeline expects 'Senior Citizen' as 0/1 (int), remove it from this list.
+        # But usually, it's safer to treat it as categorical if you OHE'd it.
+        categorical_cols = [
+            "Gender", "Senior Citizen", "Partner", "Dependents", "Phone Service", "Multiple Lines", 
+            "Internet Service", "Online Security", "Online Backup", "Device Protection", 
+            "Tech Support", "Streaming TV", "Streaming Movies", "Contract", 
+            "Paperless Billing", "Payment Method"
+        ]
         
-        prediction_text = "Churn" if results[0][0] > 0.5 else "No Churn"
-        
-        return render_template('home.html', results=prediction_text)
+        # Check if columns exist before casting (handles potential naming mismatches)
+        for col in categorical_cols:
+            if col in pred_df.columns:
+                pred_df[col] = pred_df[col].astype(str)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5005, debug=True)
+    except Exception as e:
+        st.error(f"Data Type Conversion Error: {e}")
+        st.stop()
+    
+    # 4. DEBUG DISPLAY (Remove this after it works)
+    # This will show you exactly what Pandas thinks your data is. 
+    # Look for 'object' where it should be 'float64'.
+    with st.expander("Debug: View Data Types"):
+        st.write(pred_df.dtypes)
+        st.write(pred_df)
+
+    try:
+        # 5. Transform
+        processed_data = preprocessor.transform(pred_df)
+        
+        # 6. Predict
+        prediction = model.predict(processed_data)
+        score = prediction[0][0]
+        
+        st.divider()
+        if score > 0.5:
+            st.error(f"🚨 **CHURN PREDICTED** (Probability: {score:.2%})")
+            st.write("This customer is at high risk of leaving.")
+        else:
+            st.success(f"✅ **NO CHURN** (Probability: {score:.2%})")
+            st.write("This customer is likely to stay.")
+            
+    except Exception as e:
+        st.error(f"Prediction Error: {e}")
+        st.warning("If the error is 'columns are missing', check the keys in 'input_dict' again.")
