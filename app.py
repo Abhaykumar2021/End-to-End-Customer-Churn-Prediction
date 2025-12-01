@@ -79,25 +79,25 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
     # Create input dictionary
     # CRITICAL: Ensure these keys match your training columns EXACTLY
     input_dict = {
-        "gender": [gender],
-        "SeniorCitizen": [senior_citizen], 
+        "Gender": [gender],
+        "Senior Citizen": [senior_citizen],
         "Partner": [partner],
         "Dependents": [dependents],
-        "tenure": [tenure],
-        "PhoneService": [phone_service],
-        "MultipleLines": [multiple_lines],
-        "InternetService": [internet_service],
-        "OnlineSecurity": [online_security],
-        "OnlineBackup": [online_backup],
-        "DeviceProtection": [device_protection],
-        "TechSupport": [tech_support],
-        "StreamingTV": [streaming_tv],
-        "StreamingMovies": [streaming_movies],
+        "Tenure Months": [tenure],             # Changed from 'tenure'
+        "Phone Service": [phone_service],      # Changed from 'PhoneService'
+        "Multiple Lines": [multiple_lines],    # Changed from 'MultipleLines'
+        "Internet Service": [internet_service],# Changed from 'InternetService'
+        "Online Security": [online_security],  # Changed from 'OnlineSecurity'
+        "Online Backup": [online_backup],      # ...
+        "Device Protection": [device_protection],
+        "Tech Support": [tech_support],
+        "Streaming TV": [streaming_tv],
+        "Streaming Movies": [streaming_movies],
         "Contract": [contract],
-        "PaperlessBilling": [paperless_billing],
-        "PaymentMethod": [payment_method],
-        "MonthlyCharges": [monthly_charges],
-        "TotalCharges": [total_charges]
+        "Paperless Billing": [paperless_billing],
+        "Payment Method": [payment_method],
+        "Monthly Charges": [monthly_charges],  # Changed from 'MonthlyCharges'
+        "Total Charges": [total_charges]       # Changed from 'TotalCharges'
     }
     
     pred_df = pd.DataFrame(input_dict)
