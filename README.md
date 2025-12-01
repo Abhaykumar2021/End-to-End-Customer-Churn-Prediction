@@ -1,4 +1,6 @@
-## Customer Churn Prediction Project
+# Customer Churn Prediction Project
+
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://end-to-end-customer-churn-prediction-zytxfcgsgrmxs9zyvses2p.streamlit.app/#customer-churn-prediction-system)
 
 ### 1) Problem Statement
 
@@ -106,3 +108,7 @@ Based on our Feature Importance analysis (Permutation Importance), the top facto
 ├── train.py
 └── README.md
 ```
+
+### 8) 📊 Deployment
+
+The app is deployed on Streamlit Cloud. You can access it [here](https://end-to-end-customer-churn-prediction-zytxfcgsgrmxs9zyvses2p.streamlit.app/#customer-churn-prediction-system).
