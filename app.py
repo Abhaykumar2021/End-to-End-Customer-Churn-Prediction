@@ -86,12 +86,12 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
         "Phone Service": [phone_service],
         "Multiple Lines": [multiple_lines],
         "Internet Service": [internet_service],
-        "OnlineSecurity": [online_security],  # Note: Check if key is "Online Security" (space) or "OnlineSecurity" (Camel)
-        "OnlineBackup": [online_backup],
-        "DeviceProtection": [device_protection],
-        "TechSupport": [tech_support],
-        "StreamingTV": [streaming_tv],
-        "StreamingMovies": [streaming_movies],
+        "Online Security": [online_security],  
+        "Online Backup": [online_backup],
+        "Device Protection": [device_protection],
+        "Tech Support": [tech_support],
+        "Streaming TV": [streaming_tv],
+        "Streaming Movies": [streaming_movies],
         "Contract": [contract],
         "Paperless Billing": [paperless_billing],
         "Payment Method": [payment_method],
@@ -115,8 +115,8 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
         # But usually, it's safer to treat it as categorical if you OHE'd it.
         categorical_cols = [
             "Gender", "Partner", "Dependents", "Phone Service", "Multiple Lines", 
-            "Internet Service", "OnlineSecurity", "OnlineBackup", "DeviceProtection", 
-            "TechSupport", "StreamingTV", "StreamingMovies", "Contract", 
+            "Internet Service", "Online Security", "Online Backup", "Device Protection", 
+            "Tech Support", "Streaming TV", "Streaming Movies", "Contract", 
             "Paperless Billing", "Payment Method"
         ]
         
