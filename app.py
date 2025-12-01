@@ -75,8 +75,8 @@ with tab3:
 
 # 4. PREDICTION LOGIC
 if st.button("Predict Churn Status", type="primary", use_container_width=True):
-
-    # 1. Create Dictionary (Ensure keys match IBM dataset perfectly)
+    
+    # 1. Create Dictionary
     input_dict = {
         "Gender": [gender],
         "Senior Citizen": [senior_citizen],
@@ -86,12 +86,12 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
         "Phone Service": [phone_service],
         "Multiple Lines": [multiple_lines],
         "Internet Service": [internet_service],
-        "Online Security": [online_security],
-        "Online Backup": [online_backup],
-        "Device Protection": [device_protection],
-        "Tech Support": [tech_support],
-        "Streaming TV": [streaming_tv],
-        "Streaming Movies": [streaming_movies],
+        "OnlineSecurity": [online_security],  # Note: Check if key is "Online Security" (space) or "OnlineSecurity" (Camel)
+        "OnlineBackup": [online_backup],
+        "DeviceProtection": [device_protection],
+        "TechSupport": [tech_support],
+        "StreamingTV": [streaming_tv],
+        "StreamingMovies": [streaming_movies],
         "Contract": [contract],
         "Paperless Billing": [paperless_billing],
         "Payment Method": [payment_method],
@@ -102,18 +102,39 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
     # 2. Create DataFrame
     pred_df = pd.DataFrame(input_dict)
     
-    # 3. CRITICAL FIX: Enforce Numeric Types
-    # This prevents the 'ufunc isnan' error by converting any strings to numbers (or NaN)
+    # 3. DEBUG: Force Data Types (The Nuclear Fix)
+    # We explicitly tell Pandas: "These are numbers, and these are strings."
     try:
-        pred_df['Total Charges'] = pd.to_numeric(pred_df['Total Charges'], errors='coerce')
-        pred_df['Monthly Charges'] = pd.to_numeric(pred_df['Monthly Charges'], errors='coerce')
-        pred_df['Tenure Months'] = pd.to_numeric(pred_df['Tenure Months'], errors='coerce')
-    except Exception as e:
-        st.error(f"Error converting data types: {e}")
-        st.stop()
+        # Force Numerics
+        pred_df["Tenure Months"] = pd.to_numeric(pred_df["Tenure Months"], errors='coerce')
+        pred_df["Monthly Charges"] = pd.to_numeric(pred_df["Monthly Charges"], errors='coerce')
+        pred_df["Total Charges"] = pd.to_numeric(pred_df["Total Charges"], errors='coerce')
+        
+        # Force Categoricals to String (prevents weird object types)
+        # Note: If your pipeline expects 'Senior Citizen' as 0/1 (int), remove it from this list.
+        # But usually, it's safer to treat it as categorical if you OHE'd it.
+        categorical_cols = [
+            "Gender", "Partner", "Dependents", "Phone Service", "Multiple Lines", 
+            "Internet Service", "OnlineSecurity", "OnlineBackup", "DeviceProtection", 
+            "TechSupport", "StreamingTV", "StreamingMovies", "Contract", 
+            "Paperless Billing", "Payment Method"
+        ]
+        
+        # Check if columns exist before casting (handles potential naming mismatches)
+        for col in categorical_cols:
+            if col in pred_df.columns:
+                pred_df[col] = pred_df[col].astype(str)
 
-    # 4. Debugging: Show the dataframe types if needed (Optional)
-    # st.write(pred_df.dtypes)
+    except Exception as e:
+        st.error(f"Data Type Conversion Error: {e}")
+        st.stop()
+    
+    # 4. DEBUG DISPLAY (Remove this after it works)
+    # This will show you exactly what Pandas thinks your data is. 
+    # Look for 'object' where it should be 'float64'.
+    with st.expander("Debug: View Data Types"):
+        st.write(pred_df.dtypes)
+        st.write(pred_df)
 
     try:
         # 5. Transform
@@ -123,7 +144,6 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
         prediction = model.predict(processed_data)
         score = prediction[0][0]
         
-        # 7. Display Results
         st.divider()
         if score > 0.5:
             st.error(f"🚨 **CHURN PREDICTED** (Probability: {score:.2%})")
@@ -134,11 +154,4 @@ if st.button("Predict Churn Status", type="primary", use_container_width=True):
             
     except Exception as e:
         st.error(f"Prediction Error: {e}")
-        # Helpful debugging info
-        st.info("Debugging Hint: Check if 'input_dict' keys match the training data columns exactly.")
-        with st.expander("See expected columns"):
-            # This helps you see what the pipeline expects
-            if hasattr(preprocessor, 'feature_names_in_'):
-                st.write(preprocessor.feature_names_in_)
-            else:
-                st.write("Pipeline does not have feature_names_in_ attribute.")
+        st.warning("If the error is 'columns are missing', check the keys in 'input_dict' again.")
