@@ -28,6 +28,10 @@ We conducted a thorough analysis to understand the data landscape:
 - **Tenure:** New customers are significantly more likely to churn. The median tenure for churners is around 10 months, compared to over 30 months for retained customers.
 - **Contract Type:** Customers with **Month-to-month** contracts have a much higher churn rate compared to those on one or two-year contracts.
 
+The heatmap below illustrates the correlation between different features in the dataset.
+
+![Correlation Heatmap](images/HeatMap.png)
+
 ### 4) 🤖 Model Development
 
 We experimented with several models to find the best balance between identifying churners (Recall) and overall accuracy:
@@ -112,3 +116,5 @@ Based on our Feature Importance analysis (Permutation Importance), the top facto
 ### 8) 📊 Deployment
 
 The app is deployed on Streamlit Cloud. You can access it [here](https://end-to-end-customer-churn-prediction-zytxfcgsgrmxs9zyvses2p.streamlit.app/#customer-churn-prediction-system).
+
+![End Product](images/Product.jpg)
