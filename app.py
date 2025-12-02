@@ -3,6 +3,8 @@ import pandas as pd
 import tensorflow as tf
 import joblib
 
+from src.pipeline.prediction_pipeline import PredictPipeline
+
 st.set_page_config(
     page_title="Telco Churn Predictor",
     page_icon="📉",
@@ -66,6 +68,7 @@ with tab3:
         monthly_charges = st.number_input("Monthly Charges", min_value=18.0, max_value=120.0, value=70.0)
         total_charges = st.number_input("Total Charges", min_value=0.0, value=monthly_charges * tenure)
 
+    input_dict = {
         "Gender": [gender],
         "Senior Citizen": [senior_citizen],
         "Partner": [partner],
@@ -90,16 +93,8 @@ with tab3:
     pred_df = pd.DataFrame(input_dict)
     
     try:
-        pred_df["Tenure Months"] = pd.to_numeric(pred_df["Tenure Months"], errors='coerce')
-        pred_df["Monthly Charges"] = pd.to_numeric(pred_df["Monthly Charges"], errors='coerce')
-        pred_df["Total Charges"] = pd.to_numeric(pred_df["Total Charges"], errors='coerce')
-        
-        categorical_cols = [
-            "Gender", "Senior Citizen", "Partner", "Dependents", "Phone Service", "Multiple Lines", 
-            "Internet Service", "Online Security", "Online Backup", "Device Protection", 
-            "Tech Support", "Streaming TV", "Streaming Movies", "Contract", 
-            "Paperless Billing", "Payment Method"
-        ]
+        predict_pipeline = PredictPipeline()
+        prediction = predict_pipeline.predict(pred_df)
         
         score = prediction[0][0]
         
